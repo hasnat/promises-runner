@@ -1,0 +1,14 @@
+{
+  "name": "promises-runner",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node ./test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
