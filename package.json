@@ -1,14 +1,21 @@
 {
   "name": "promises-runner",
-  "version": "1.0.0",
+  "description": "Run promises in batches waiting for data from previous promises.",
+  "author": "Hasnat Ullah <hasnat.ullah@gmail.com> (https://hasn.at)",
+  "version": "0.0.1",
   "main": "index.js",
-  "dependencies": {
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hasnat/promises-runner.git"
   },
-  "devDependencies": {},
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2",
+    "sinon": "^2.3.5"
+  },
   "scripts": {
-    "test": "node ./test.js"
+    "test": "mocha"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "license": "MIT"
 }
