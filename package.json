@@ -3,18 +3,31 @@
   "description": "Run promises in batches waiting for data from previous promises.",
   "author": "Hasnat Ullah <hasnat.ullah@gmail.com> (https://hasn.at)",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/hasnat/promises-runner.git"
   },
+  "keywords": [
+    "promise",
+    "promises",
+    "serie",
+    "series",
+    "parallel",
+    "consecutive",
+    "consecutively"
+  ],
   "dependencies": {},
   "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
     "sinon": "^2.3.5"
   },
   "scripts": {
+    "build": "babel ./index.js --presets babel-preset-es2015 --out-dir ./dist",
+    "prepublish": "npm run build",
     "test": "mocha"
   },
   "license": "MIT"
