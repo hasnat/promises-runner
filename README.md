@@ -24,7 +24,7 @@ var PromisesRunner = require('promises-runner')
 function expensiveOperation(value) {
   return Promise.resolve(value)
 }
-const arrayOfPromises = [
+const objectsArrayWithPromises = [
     {a: expensiveOperation},            // <--┐
     {a: expensiveOperation},            // <----- these will run in parallel
     {a: expensiveOperation},            // <--┘
@@ -35,7 +35,7 @@ const arrayOfPromises = [
     {a: expensiveOperation},            // these 2 -- after the previous one is resolved
     {a: expensiveOperation},            // these 2 -- and are ran in parallel
 ]
-var pr = new PromisesRunner(arrayOfPromises);
+var pr = new PromisesRunner({objectsArrayWithPromises});
 
 pr.start();
 ```
