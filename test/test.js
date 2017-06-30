@@ -10,24 +10,23 @@ describe('PromisesRunner', function() {
 
     it('gets all data', function(done) {
         const allPromises = [
-            {a: (d) => sleepFor(1, 'action1', 'a1', d)},
-            {a: (d) => sleepFor(3, 'action2', 'a2', d)},
-            {a: (d) => sleepFor(1, 'action3w', 'a3', d), w: true},
-            {a: (d) => sleepFor(8, 'action4', 'a4', d)},
-            {a: (d) => sleepFor(1, 'action5', 'a5', d)},
-            {a: (d) => sleepFor(2, 'action6w', 'a6', d), w: true},
-            {a: (d) => sleepFor(2, 'action7', 'a7', d)},
-            {a: (d) => sleepFor(5, 'action8w', 'a8', d), w: true},
-            {a: (d) => sleepFor(2, 'action9', 'a9', d)},
-            {a: (d) => sleepFor(1, 'action10', 'a10', d)},
+            {promise: (d) => sleepFor(1, 'action1', 'a1', d)},
+            {promise: (d) => sleepFor(3, 'action2', 'a2', d)},
+            {promise: (d) => sleepFor(1, 'action3w', 'a3', d), wait: true},
+            {promise: (d) => sleepFor(8, 'action4', 'a4', d)},
+            {promise: (d) => sleepFor(1, 'action5', 'a5', d)},
+            {promise: (d) => sleepFor(2, 'action6w', 'a6', d), wait: true},
+            {promise: (d) => sleepFor(2, 'action7', 'a7', d)},
+            {promise: (d) => sleepFor(5, 'action8w', 'a8', d), wait: true},
+            {promise: (d) => sleepFor(2, 'action9', 'a9', d)},
+            {promise: (d) => sleepFor(1, 'action10', 'a10', d)},
         ];
 
-        new PromisesRunner({objectsArrayWithPromises: allPromises, data: {initialData: -1}})
+        new PromisesRunner({objectsArrayWithPromises: allPromises, inputData: {initialData: -1}})
             .start()
             .then(d => {
                 expect(d).to.deep.equal(
                     {
-                        initialData: -1,
                         a1: 'action1',
                         a2: 'action2',
                         a3: 'action3w',
@@ -42,36 +41,143 @@ describe('PromisesRunner', function() {
                 );
                 done();
             })
-            .catch(e => console.log);
+            .catch(done);
     });
 
     it('respects the promises wait', function(done) {
 
         const allPromises = [
-            {a: sinon.spy(() => sleepFor(20))},
-            {a: sinon.spy(() => sleepFor(10))},
-            {a: sinon.spy(() => sleepFor(5)), w: true},
-            {a: sinon.spy(() => sleepFor(8))},
-            {a: sinon.spy(() => sleepFor(3)), w: true},
-            {a: sinon.spy(() => sleepFor(4))},
-            {a: sinon.spy(() => sleepFor(0)), w: true},
-            {a: sinon.spy(() => sleepFor(2))},
-            {a: sinon.spy(() => sleepFor(0))},
+            {promise: sinon.spy(() => sleepFor(20))},
+            {promise: sinon.spy(() => sleepFor(10))},
+            {promise: sinon.spy(() => sleepFor(5)), wait: true},
+            {promise: sinon.spy(() => sleepFor(8))},
+            {promise: sinon.spy(() => sleepFor(3)), wait: true},
+            {promise: sinon.spy(() => sleepFor(4))},
+            {promise: sinon.spy(() => sleepFor(0)), wait: true},
+            {promise: sinon.spy(() => sleepFor(2))},
+            {promise: sinon.spy(() => sleepFor(0))},
         ];
 
-        new PromisesRunner({objectsArrayWithPromises: allPromises, data: {}})
+        new PromisesRunner({objectsArrayWithPromises: allPromises, inputData: {}})
             .start()
             .then(d => {
-                assert(allPromises[0].a.calledBefore(allPromises[2].a));
-                assert(allPromises[1].a.calledBefore(allPromises[2].a));
+                assert(allPromises[0].promise.calledBefore(allPromises[2].promise));
+                assert(allPromises[1].promise.calledBefore(allPromises[2].promise));
 
-                assert(allPromises[3].a.calledBefore(allPromises[4].a));
-                assert(allPromises[1].a.calledBefore(allPromises[4].a));
+                assert(allPromises[3].promise.calledBefore(allPromises[4].promise));
+                assert(allPromises[1].promise.calledBefore(allPromises[4].promise));
 
-                assert(allPromises[5].a.calledBefore(allPromises[6].a));
+                assert(allPromises[5].promise.calledBefore(allPromises[6].promise));
 
                 done();
             })
-            .catch(e => console.log);
+            .catch(done);
+    });
+
+    it('gets saves all data to specified key', function(done) {
+        const allPromises = [
+            {promise: (d) => Promise.resolve({a: 'A'})},
+            {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
+            {promise: (d) => Promise.resolve({c: 'C'})},
+        ];
+
+        new PromisesRunner({
+            objectsArrayWithPromises: allPromises,
+            inputData: {someData: -1},
+            outputDataKey: 'someOutputKey'}
+        )
+            .start()
+            .then(d => {
+                expect(d).to.deep.equal(
+                    {
+                        someOutputKey: {
+                            a: 'A',
+                            b: 'B',
+                            c: 'C'
+                        }
+                    }
+                );
+                done();
+            })
+            .catch(done);
+    });
+
+    it('gets merges data and sends to input', function(done) {
+        const allPromises = [
+            {promise: sinon.spy(() => Promise.resolve({a0: 'action0'}))},
+            {promise: sinon.spy(() => Promise.resolve({a1: 'action1'}))},
+            {promise: sinon.spy(() => Promise.resolve({a2: 'action2'}))},
+            {promise: sinon.spy(() => Promise.resolve({a3: 'action3w'})), wait: true},
+            {promise: sinon.spy(() => Promise.resolve({a4: 'action4'}))},
+            {promise: sinon.spy(() => Promise.resolve({a5: 'action5w'})), wait: true},
+            {promise: sinon.spy(() => Promise.resolve({a6: 'action6'}))},
+            {promise: sinon.spy(() => Promise.resolve({a7: 'action7w'})), wait: true},
+            {promise: sinon.spy(() => Promise.resolve({a8: 'action8'}))},
+            {promise: sinon.spy(() => Promise.resolve({a9: 'action9'}))},
+        ];
+
+        new PromisesRunner({
+            objectsArrayWithPromises: allPromises,
+            inputData: {someData: -1},
+            outputDataKey: 'someOutputKey',
+            mergePromiseOutputToNextPromiseInput: true
+        })
+            .start()
+            .then(d => {
+                expect(d).to.deep.equal(
+                    {
+                        someOutputKey: {
+                            a0: 'action0',
+                            a1: 'action1',
+                            a2: 'action2',
+                            a3: 'action3w',
+                            a4: 'action4',
+                            a5: 'action5w',
+                            a6: 'action6',
+                            a7: 'action7w',
+                            a8: 'action8',
+                            a9: 'action9'
+                        },
+                    }
+                );
+                expect(allPromises[0].promise.firstCall.args[0]).to.deep.equal(
+                    {someData: -1, someOutputKey: {}}
+                );
+                expect(allPromises[3].promise.firstCall.args[0]).to.deep.equal(
+                    {someData: -1,
+                        someOutputKey: {
+                            a0: 'action0',
+                            a1: 'action1',
+                            a2: 'action2'
+                        }
+                    }
+                );
+                expect(allPromises[5].promise.firstCall.args[0]).to.deep.equal(
+                    {someData: -1,
+                        someOutputKey: {
+                            a0: 'action0',
+                            a1: 'action1',
+                            a2: 'action2',
+                            a3: 'action3w',
+                            a4: 'action4'
+                        }
+                    }
+                );
+                expect(allPromises[7].promise.firstCall.args[0]).to.deep.equal(
+                    {someData: -1,
+                        someOutputKey: {
+                            a0: 'action0',
+                            a1: 'action1',
+                            a2: 'action2',
+                            a3: 'action3w',
+                            a4: 'action4',
+                            a5: 'action5w',
+                            a6: 'action6'
+                        }
+                    }
+                );
+                done();
+            })
+            .catch(done);
     });
 });
