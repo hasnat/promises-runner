@@ -17,6 +17,7 @@ PromisesRunner({
     inputData: Object,                                  // default {}
     outputDataKey: string|false,                        // default false
     mergePromiseOutputToNextPromiseInput: true|false    // default false
+    mergeSameKeyByConvertingToArray: true|false         // default false
     })
 ```
 objectsArrayWithPromises single object should be `{promise: Promise, wait: true|false}`

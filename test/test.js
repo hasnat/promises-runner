@@ -102,6 +102,61 @@ describe('PromisesRunner', function() {
             .catch(done);
     });
 
+    it('same keys are merged and previous values replaced', function(done) {
+        const allPromises = [
+            {promise: (d) => Promise.resolve({a: 'A'})},
+            {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
+            {promise: (d) => Promise.resolve({a: 'C'})},
+        ];
+
+        new PromisesRunner({
+            objectsArrayWithPromises: allPromises,
+            inputData: {someData: -1},
+            outputDataKey: 'someOutputKey'
+        })
+            .start()
+            .then(d => {
+                expect(d).to.deep.equal(
+                    {
+                        someOutputKey: {
+                            a: 'C',
+                            b: 'B'
+                        }
+                    }
+                );
+                done();
+            })
+            .catch(done);
+    });
+
+    it('same keys are merged as arrays', function(done) {
+        const allPromises = [
+            {promise: (d) => Promise.resolve({a: 'A'})},
+            {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
+            {promise: (d) => Promise.resolve({a: 'C'})},
+        ];
+
+        new PromisesRunner({
+            objectsArrayWithPromises: allPromises,
+            inputData: {someData: -1},
+            outputDataKey: 'someOutputKey',
+            mergeSameKeyByConvertingToArray: true
+        })
+            .start()
+            .then(d => {
+                expect(d).to.deep.equal(
+                    {
+                        someOutputKey: {
+                            a: ['A', 'C'],
+                            b: 'B'
+                        }
+                    }
+                );
+                done();
+            })
+            .catch(done);
+    });
+
     it('gets merges data and sends to input', function(done) {
         const allPromises = [
             {promise: sinon.spy(() => Promise.resolve({a0: 'action0'}))},

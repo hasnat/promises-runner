@@ -1,27 +1,50 @@
+const ensureArray = (arr) => arr === undefined ? [] : Array.isArray(arr) ? arr : [arr];
+
+const mergeSimilar = (currentData, newData) => ensureArray(currentData).concat([newData]);
+
+const ensurePromise = (isThisPromise) => (
+    isThisPromise && typeof isThisPromise.then === 'function' ? isThisPromise : Promise.resolve(isThisPromise)
+)
+const mergeObjectCreatingArraysForSameKeys = (existingData, newData) => {
+    newData = ensureArray(newData)
+    for (let i = 0, len = newData.length; i < len; i++) {
+        const data = newData[i];
+        Object.keys(data).map(key => {
+            if (existingData[key] !== undefined) {
+                existingData[key] = mergeSimilar(existingData[key], data[key]);
+            } else {
+                existingData[key] = data[key];
+            }
+        })
+    }
+    return existingData;
+}
 module.exports = class PromisesRunner {
     constructor({
-                    objectsArrayWithPromises = [],
-                    inputData = {},
-                    outputDataKey = false,
-                    mergePromiseOutputToNextPromiseInput = false
-                }) {
+        objectsArrayWithPromises = [],
+        inputData = {},
+        outputDataKey = false,
+        mergePromiseOutputToNextPromiseInput = false,
+        mergeSameKeyByConvertingToArray = false
+    }) {
         this.inputData = inputData;
         this.outputData = {};
         this.outputDataKey = outputDataKey;
         this.mainPromises = objectsArrayWithPromises;
         this.mergeInput = mergePromiseOutputToNextPromiseInput;
-    }
-
-    static ensurePromise(isThisPromise) {
-        return isThisPromise && typeof isThisPromise.then === 'function' ? isThisPromise : Promise.resolve(isThisPromise);
+        this.mergeOutputSpecial = mergeSameKeyByConvertingToArray;
     }
 
     resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun) {
         return Promise.all(parallelPromises)
             .then(results => {
-                this.outputData = Object.assign({}, this.outputData, ...results);
+                if (this.mergeOutputSpecial) {
+                    this.outputData = mergeObjectCreatingArraysForSameKeys(this.outputData, results)
+                } else {
+                    this.outputData = Object.assign({}, this.outputData, ...results);
+                }
 
-                return PromisesRunner.ensurePromise(nextPromiseToRun(this.inputForPromise()))
+                return ensurePromise(nextPromiseToRun(this.inputForPromise()))
             })
     }
 
@@ -52,13 +75,18 @@ module.exports = class PromisesRunner {
             if (promiseToRun.wait) {
                 return this.resolvePromisesAndRunFollowing(parallelPromises, promiseToRun.promise)
                     .then(val => {
-                        this.outputData = Object.assign({}, this.outputData, val);
+                        if (this.mergeOutputSpecial) {
+                            this.outputData = mergeObjectCreatingArraysForSameKeys(this.outputData, val)
+                        } else {
+                            this.outputData = Object.assign({}, this.outputData, val);
+                        }
+
                         return this.runSetOfPromisesFrom(i + 1);
                     });
             } else {
                 parallelPromises.push(
                     this.resolvePromisesAndRunFollowing([
-                        PromisesRunner.ensurePromise(promiseToRun.promise(this.inputForPromise()))
+                        ensurePromise(promiseToRun.promise(this.inputForPromise()))
                     ], f => ({}))
                 );
             }
