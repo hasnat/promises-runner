@@ -20,7 +20,8 @@ PromisesRunner({
     mergeSameKeyByConvertingToArray: true|false         // default false
     })
 ```
-objectsArrayWithPromises single object should be `{promise: Promise, wait: true|false}`
+objectsArrayWithPromises single object should be
+`{promise: (inputData) => Promise, wait: true|false, outputKey: string}`
 
 
 ## Usage example
@@ -63,7 +64,7 @@ const allPromises = [
             {promise: (d) => sleepFor(2, 'action7', 'a7', d)},
             {promise: (d) => sleepFor(5, 'action8w', 'a8', d), wait: true},
             {promise: (d) => sleepFor(2, 'action9', 'a9', d)},
-            {promise: (d) => sleepFor(1, 'action10', 'a10', d)},
+            {promise: (d) => sleepFor(1, 'action10', 'a10', d), outputKey: 'abc'},
         ];
 
         new PromisesRunner({
@@ -90,7 +91,9 @@ output:
         a7: 'action7',
         a8: 'action8w',
         a9: 'action9',
-        a10: 'action10' 
+        abc: {
+            a10: 'action10'
+        }
     }
 }
 */
@@ -108,7 +111,9 @@ output:
     a7: 'action7',
     a8: 'action8w',
     a9: 'action9',
-    a10: 'action10' 
+    abc: {
+        a10: 'action10'
+    }
 }
 */
 /* 
@@ -125,7 +130,9 @@ output:
     a7: 'action7',
     a8: 'action8w',
     a9: 'action9',
-    a10: 'action10' 
+    abc: {
+        a10: 'action10'
+    }
 }
 */
 ```

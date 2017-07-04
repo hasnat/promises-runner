@@ -35,7 +35,7 @@ module.exports = class PromisesRunner {
         this.mergeOutputSpecial = mergeSameKeyByConvertingToArray;
     }
 
-    resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun) {
+    resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {
         return Promise.all(parallelPromises)
             .then(results => {
                 if (this.mergeOutputSpecial) {
@@ -45,6 +45,7 @@ module.exports = class PromisesRunner {
                 }
 
                 return ensurePromise(nextPromiseToRun(this.inputForPromise()))
+                    .then(result => Promise.resolve(outputKey !== undefined ? {[outputKey]: result} : result))
             })
     }
 
@@ -72,8 +73,9 @@ module.exports = class PromisesRunner {
 
         for (let i = startIndex; i < this.mainPromises.length; i++) {
             const promiseToRun = this.mainPromises[i];
-            if (promiseToRun.wait) {
-                return this.resolvePromisesAndRunFollowing(parallelPromises, promiseToRun.promise)
+            const {wait, promise, outputKey} = promiseToRun;
+            if (wait) {
+                return this.resolvePromisesAndRunFollowing(parallelPromises, promise, outputKey)
                     .then(val => {
                         if (this.mergeOutputSpecial) {
                             this.outputData = mergeObjectCreatingArraysForSameKeys(this.outputData, val)
@@ -84,9 +86,11 @@ module.exports = class PromisesRunner {
                         return this.runSetOfPromisesFrom(i + 1);
                     });
             } else {
+
                 parallelPromises.push(
                     this.resolvePromisesAndRunFollowing([
-                        ensurePromise(promiseToRun.promise(this.inputForPromise()))
+                        ensurePromise(promise(this.inputForPromise()))
+                            .then(result => Promise.resolve(outputKey !== undefined ? {[outputKey]: result} : result))
                     ], f => ({}))
                 );
             }

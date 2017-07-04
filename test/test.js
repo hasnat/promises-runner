@@ -79,6 +79,7 @@ describe('PromisesRunner', function() {
             {promise: (d) => Promise.resolve({a: 'A'})},
             {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
             {promise: (d) => Promise.resolve({c: 'C'})},
+            {promise: (d) => Promise.resolve('D'), outputKey: 'd'},
         ];
 
         new PromisesRunner({
@@ -93,7 +94,8 @@ describe('PromisesRunner', function() {
                         someOutputKey: {
                             a: 'A',
                             b: 'B',
-                            c: 'C'
+                            c: 'C',
+                            d: 'D'
                         }
                     }
                 );
@@ -129,11 +131,42 @@ describe('PromisesRunner', function() {
             .catch(done);
     });
 
+    it('same keys are merged and previous values replaced', function(done) {
+        const allPromises = [
+            {promise: (d) => Promise.resolve({a: 'A'})},
+            {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
+            {promise: (d) => Promise.resolve({a: 'C'}), wait: true},
+            {promise: (d) => Promise.resolve('F'), outputKey: 'a'},
+        ];
+
+        new PromisesRunner({
+            objectsArrayWithPromises: allPromises,
+            inputData: {someData: -1},
+            outputDataKey: 'someOutputKey'
+        })
+            .start()
+            .then(d => {
+                expect(d).to.deep.equal(
+                    {
+                        someOutputKey: {
+                            a: 'F',
+                            b: 'B'
+                        }
+                    }
+                );
+                done();
+            })
+            .catch(done);
+    });
+
     it('same keys are merged as arrays', function(done) {
         const allPromises = [
             {promise: (d) => Promise.resolve({a: 'A'})},
             {promise: (d) => Promise.resolve({b: 'B'}), wait: true},
             {promise: (d) => Promise.resolve({a: 'C'})},
+            {promise: (d) => Promise.resolve({a: 'D'}), outputKey: 'abc'},
+            {promise: (d) => Promise.resolve({c: 'C'})},
+            {promise: (d) => Promise.resolve('F'), outputKey: 'b'},
         ];
 
         new PromisesRunner({
@@ -148,7 +181,11 @@ describe('PromisesRunner', function() {
                     {
                         someOutputKey: {
                             a: ['A', 'C'],
-                            b: 'B'
+                            b: ['B', 'F'],
+                            c: 'C',
+                            abc: {
+                                a: 'D'
+                            }
                         }
                     }
                 );
@@ -168,7 +205,7 @@ describe('PromisesRunner', function() {
             {promise: sinon.spy(() => Promise.resolve({a6: 'action6'}))},
             {promise: sinon.spy(() => Promise.resolve({a7: 'action7w'})), wait: true},
             {promise: sinon.spy(() => Promise.resolve({a8: 'action8'}))},
-            {promise: sinon.spy(() => Promise.resolve({a9: 'action9'}))},
+            {promise: sinon.spy(() => Promise.resolve({a9: 'action9'})), outputKey: 'abc'},
         ];
 
         new PromisesRunner({
@@ -191,7 +228,9 @@ describe('PromisesRunner', function() {
                             a6: 'action6',
                             a7: 'action7w',
                             a8: 'action8',
-                            a9: 'action9'
+                            abc: {
+                                a9: 'action9'
+                            }
                         },
                     }
                 );
