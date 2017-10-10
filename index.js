@@ -25,7 +25,8 @@ module.exports = class PromisesRunner {
         inputData = {},
         outputDataKey = false,
         mergePromiseOutputToNextPromiseInput = false,
-        mergeSameKeyByConvertingToArray = false
+        mergeSameKeyByConvertingToArray = false,
+        logger = false
     }) {
         this.inputData = inputData;
         this.outputData = {};
@@ -33,6 +34,25 @@ module.exports = class PromisesRunner {
         this.mainPromises = objectsArrayWithPromises;
         this.mergeInput = mergePromiseOutputToNextPromiseInput;
         this.mergeOutputSpecial = mergeSameKeyByConvertingToArray;
+        this.logger = logger;
+        if (typeof this.logger === 'function') {
+            this.mainPromises = objectsArrayWithPromises.map(obj => {
+                const promiseToRun = obj.promise;
+                obj.promise = input => {
+                    this.logger('START', promiseToRun, input);
+                    return promiseToRun(input)
+                        .then((out) => {
+                            this.logger('DONE', promiseToRun, out);
+                            return Promise.resolve(out);
+                        })
+                        .catch((err) => {
+                            this.logger('ERROR', promiseToRun, err);
+                            throw err;
+                        });
+                };
+                return obj;
+            })
+        }
     }
 
     resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {

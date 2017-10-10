@@ -16,13 +16,24 @@ PromisesRunner({
     objectsArrayWithPromises: [Object],                 // default []
     inputData: Object,                                  // default {}
     outputDataKey: string|false,                        // default false
-    mergePromiseOutputToNextPromiseInput: true|false    // default false
-    mergeSameKeyByConvertingToArray: true|false         // default false
+    mergePromiseOutputToNextPromiseInput: true|false,   // default false
+    mergeSameKeyByConvertingToArray: true|false,        // default false
+    logger: Function|false         // default false
     })
 ```
 objectsArrayWithPromises single object should be
 `{promise: (inputData) => Promise, wait: true|false, outputKey: string}`
 
+
+logger function
+`logger: (action: String, promiseReturningFunction: Function, inputOutputOrError: Mixed)`
+action = START|ERROR|DONE
+promiseReturningFunction = function in promise key in objectsArrayWithPromises
+inputOutputOrError = would be input of promise if action = START,
+                     output of promise if action = DONE
+                     and error if action = ERROR
+
+Check example logger function at end of README
 
 ## Usage example
 
@@ -135,4 +146,28 @@ output:
     }
 }
 */
+```
+
+
+Example logger
+`taskLogger.js`
+```js
+const chalk = require('chalk');
+const lowerCase = require('lodash/lowerCase');
+const pad = require('lodash/pad');
+module.exports = (action, relatedPromise, relatedData) => {
+    let consoleColor = chalk;
+    switch (action) {
+        case 'START':
+            consoleColor = chalk.bgKeyword('orange');
+            break;
+        case 'DONE':
+            consoleColor = chalk.bgKeyword('green');
+            break;
+        case 'ERROR':
+            consoleColor = chalk.bgKeyword('red');
+            break;
+    }
+    console.log(consoleColor(`[${pad(action, 9)}]`), '==>', lowerCase(relatedPromise.name));
+};
 ```
