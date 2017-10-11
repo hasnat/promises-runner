@@ -46,16 +46,16 @@ describe('PromisesRunner', function() {
 
     it('gets calls logger for all promises', function(done) {
         const allPromises = [
-            {promise: (d) => sleepFor(1, 'action1', 'a1', d)},
-            {promise: (d) => sleepFor(3, 'action2', 'a2', d)},
-            {promise: (d) => sleepFor(1, 'action3w', 'a3', d), wait: true},
-            {promise: (d) => sleepFor(8, 'action4', 'a4', d)},
-            {promise: (d) => sleepFor(1, 'action5', 'a5', d)},
-            {promise: (d) => sleepFor(2, 'action6w', 'a6', d), wait: true},
-            {promise: (d) => sleepFor(2, 'action7', 'a7', d)},
-            {promise: (d) => sleepFor(5, 'action8w', 'a8', d), wait: true},
-            {promise: (d) => sleepFor(2, 'action9', 'a9', d)},
-            {promise: (d) => sleepFor(1, 'action10', 'a10', d)},
+            {promise: (d) => sleepFor(1, 'action1', 'a1', d), logMessage: 'Task a1'},
+            {promise: (d) => sleepFor(3, 'action2', 'a2', d), logMessage: 'Task a2'},
+            {promise: (d) => sleepFor(1, 'action3w', 'a3', d), logMessage: 'Task a3', wait: true},
+            {promise: (d) => sleepFor(8, 'action4', 'a4', d), logMessage: 'Task a4'},
+            {promise: (d) => sleepFor(1, 'action5', 'a5', d), logMessage: 'Task a5'},
+            {promise: (d) => sleepFor(2, 'action6w', 'a6', d), logMessage: 'Task a6', wait: true},
+            {promise: (d) => sleepFor(2, 'action7', 'a7', d), logMessage: 'Task a7'},
+            {promise: (d) => sleepFor(5, 'action8w', 'a8', d), logMessage: 'Task a8', wait: true},
+            {promise: (d) => sleepFor(2, 'action9', 'a9', d), logMessage: 'Task a9'},
+            {promise: (d) => sleepFor(1, 'action10', 'a10', d), logMessage: 'Task a10'},
         ];
         const logger = sinon.spy();
         new PromisesRunner({
@@ -81,7 +81,7 @@ describe('PromisesRunner', function() {
                 );
 
                 expect(logger.getCall(0).args[0]).to.equal('START');
-                expect(logger.getCall(0).args[1]).to.be.a('function');  // thats the promise returning function
+                expect(logger.getCall(0).args[1].logMessage).to.equal('Task a1');  // thats the promise returning function
                 expect(logger.getCall(0).args[2]).to.be.a('object');
                 expect(logger.callCount).to.equal(20);
                 done();
@@ -91,8 +91,8 @@ describe('PromisesRunner', function() {
 
     it('gets calls passes errors to logger', function(done) {
         const allPromises = [
-            {promise: (d) => sleepFor(1, 'action1', 'a1', d)},
-            {promise: (d) => Promise.reject('some error'), wait: true},
+            {promise: (d) => sleepFor(1, 'action1', 'a1', d), logMessage: 'Task a1'},
+            {promise: (d) => Promise.reject('some error'), logMessage: 'Task should fail', wait: true},
             {promise: (d) => sleepFor(1, 'action3w', 'a3', d)}
         ];
         const logger = sinon.spy();
@@ -106,19 +106,20 @@ describe('PromisesRunner', function() {
                 expect(d).to.equal('some error');
 
                 expect(logger.getCall(0).args[0]).to.equal('START');
-                expect(logger.getCall(0).args[1]).to.be.a('function');  // thats the promise returning function
+                expect(logger.getCall(0).args[1].logMessage).to.equal('Task a1');  // thats the promise returning function
                 expect(logger.getCall(0).args[2]).to.be.a('object');
+
                 expect(logger.getCall(1).args[0]).to.equal('DONE');
-                expect(logger.getCall(1).args[1]).to.be.a('function');  // thats the promise returning function
+                expect(logger.getCall(1).args[1].logMessage).to.equal('Task a1');  // thats the promise returning function
                 expect(logger.getCall(1).args[2]).to.be.a('object');
 
                 expect(logger.getCall(2).args[0]).to.equal('START');
-                expect(logger.getCall(2).args[1]).to.be.a('function');  // thats the promise returning function
+                expect(logger.getCall(2).args[1].logMessage).to.equal('Task should fail');  // thats the promise returning function
                 expect(logger.getCall(2).args[2]).to.be.a('object');
 
 
                 expect(logger.getCall(3).args[0]).to.equal('ERROR');
-                expect(logger.getCall(3).args[1]).to.be.a('function');  // thats the promise returning function
+                expect(logger.getCall(3).args[1].logMessage).to.equal('Task should fail');  // thats the promise returning function
                 expect(logger.getCall(3).args[2]).to.equal('some error');
                 expect(logger.callCount).to.equal(4);
                 done();

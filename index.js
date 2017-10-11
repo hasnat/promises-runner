@@ -39,14 +39,14 @@ module.exports = class PromisesRunner {
             this.mainPromises = objectsArrayWithPromises.map(obj => {
                 const promiseToRun = obj.promise;
                 obj.promise = input => {
-                    this.logger('START', promiseToRun, input);
+                    this.logger('START', obj, input);
                     return promiseToRun(input)
                         .then((out) => {
-                            this.logger('DONE', promiseToRun, out);
+                            this.logger('DONE', obj, out);
                             return Promise.resolve(out);
                         })
                         .catch((err) => {
-                            this.logger('ERROR', promiseToRun, err);
+                            this.logger('ERROR', obj, err);
                             throw err;
                         });
                 };

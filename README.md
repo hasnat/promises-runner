@@ -26,10 +26,10 @@ objectsArrayWithPromises single object should be
 
 
 logger function
-`logger: (action: String, promiseReturningFunction: Function, inputOutputOrError: Mixed)`
-action = START|ERROR|DONE
-promiseReturningFunction = function in promise key in objectsArrayWithPromises
-inputOutputOrError = would be input of promise if action = START,
+`logger: (action: String, objectFromArrayWithPromises: Object, inputOutputOrError: Mixed)`
+`action` = START|ERROR|DONE
+`objectFromArrayWithPromises` = one object from `objectsArrayWithPromises`
+`inputOutputOrError` = would be input of promise if action = START,
                      output of promise if action = DONE
                      and error if action = ERROR
 
@@ -155,7 +155,7 @@ Example logger
 const chalk = require('chalk');
 const lowerCase = require('lodash/lowerCase');
 const pad = require('lodash/pad');
-module.exports = (action, relatedPromise, relatedData) => {
+module.exports = (action, relatedPromiseRunnerObject, relatedData) => {
     let consoleColor = chalk;
     switch (action) {
         case 'START':
@@ -168,6 +168,6 @@ module.exports = (action, relatedPromise, relatedData) => {
             consoleColor = chalk.bgKeyword('red');
             break;
     }
-    console.log(consoleColor(`[${pad(action, 9)}]`), '==>', lowerCase(relatedPromise.name));
+    console.log(consoleColor(`[${pad(action, 9)}]`), '==>', lowerCase(relatedPromiseRunnerObject.name));
 };
 ```
