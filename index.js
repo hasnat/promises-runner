@@ -38,6 +38,7 @@ module.exports = class PromisesRunner {
         if (typeof this.logger === 'function') {
             this.mainPromises = objectsArrayWithPromises.map(obj => {
                 const promiseToRun = obj.promise;
+                obj.promiseName = promiseToRun.name;
                 obj.promise = input => {
                     this.logger('START', obj, input);
                     return promiseToRun(input)

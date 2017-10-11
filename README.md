@@ -28,7 +28,7 @@ objectsArrayWithPromises single object should be
 logger function
 `logger: (action: String, objectFromArrayWithPromises: Object, inputOutputOrError: Mixed)`
 `action` = START|ERROR|DONE
-`objectFromArrayWithPromises` = one object from `objectsArrayWithPromises`
+`objectFromArrayWithPromises` = one object from `objectsArrayWithPromises` with (`promiseName`)
 `inputOutputOrError` = would be input of promise if action = START,
                      output of promise if action = DONE
                      and error if action = ERROR
@@ -168,6 +168,6 @@ module.exports = (action, relatedPromiseRunnerObject, relatedData) => {
             consoleColor = chalk.bgKeyword('red');
             break;
     }
-    console.log(consoleColor(`[${pad(action, 9)}]`), '==>', lowerCase(relatedPromiseRunnerObject.name));
+    console.log(consoleColor(`[${pad(action, 9)}]`), '==>', lowerCase(relatedPromiseRunnerObject.promiseName));
 };
 ```
