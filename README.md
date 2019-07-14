@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/hasnat/promises-runner.svg)](https://travis-ci.org/hasnat/promises-runner)
 
-[![NPM](https://nodei.co/npm/promises-runner.png)](https://nodei.co/npm/promises-runner/)
+[![NPM](https://nodei.co/npm/promises-runner.png)](https://nodei.co/npm/promises-runner/) [![Greenkeeper badge](https://badges.greenkeeper.io/hasnat/promises-runner.svg)](https://greenkeeper.io/)
 
 Run promises from an array of objects waiting for some promises to be resolved before continuing running others
 
