@@ -157,6 +157,66 @@ describe('PromisesRunner', function() {
             .catch(done);
     });
 
+
+    it('case pause promises runner', function(done) {
+
+        const allPromises = [
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1))},
+        ];
+
+        const runner = new PromisesRunner({objectsArrayWithPromises: allPromises, inputData: {}})
+        runner
+            .start()
+            .then(d => {
+                allPromises.map(({promise}) => {
+                    assert(promise.calledOnce);
+                });
+                done();
+            })
+            .catch(done);
+        const resume = runner.pause();
+        assert(allPromises[2].promise.notCalled);
+        resume();
+    });
+
+    it('case stop promises runner', function(done) {
+
+        const allPromises = [
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1)), wait: true},
+            {promise: sinon.spy(() => sleepFor(1))},
+            {promise: sinon.spy(() => sleepFor(1))},
+        ];
+
+        const runner = new PromisesRunner({objectsArrayWithPromises: allPromises, inputData: {}})
+        runner
+            .start()
+            .then(d => {
+                assert(allPromises[0].promise.calledOnce);
+                assert(allPromises[1].promise.calledOnce);
+                assert(allPromises[2].promise.notCalled);
+                assert(allPromises[3].promise.notCalled);
+                assert(allPromises[4].promise.notCalled);
+                done();
+            })
+            .catch(done);
+        runner.stop();
+        assert(allPromises[2].promise.notCalled);
+    });
+
     it('gets saves all data to specified key', function(done) {
         const allPromises = [
             {promise: (d) => Promise.resolve({a: 'A'})},

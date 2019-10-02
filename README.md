@@ -58,6 +58,15 @@ const objectsArrayWithPromises = [
 var pr = new PromisesRunner({objectsArrayWithPromises});
 
 pr.start();
+
+// pause/resume PromisesRunner
+const resume = pr.pause();
+resume();
+
+// stop promises runner,
+// this will send currentOutput and
+// promise.then will be called after completion of promises already running (parallel ones)
+const currentOutput = pr.stop();
 ```
 
 ### Example of objects being merged as per outputKey and mergePromiseOutputToNextPromiseInput

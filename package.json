@@ -1,8 +1,8 @@
 {
   "name": "promises-runner",
-  "description": "Run promises in batches waiting for data from previous promises.",
+  "description": "Run promises in batches waiting for data from previous promises, pause/resume/stop promises.",
   "author": "Hasnat Ullah <hasnat.ullah@gmail.com> (https://hasn.at)",
-  "version": "0.0.10",
+  "version": "0.0.2",
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
@@ -15,7 +15,10 @@
     "series",
     "parallel",
     "consecutive",
-    "consecutively"
+    "consecutively",
+    "pause",
+    "resume",
+    "stop"
   ],
   "dependencies": {},
   "devDependencies": {

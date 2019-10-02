@@ -28,6 +28,9 @@ module.exports = class PromisesRunner {
         mergeSameKeyByConvertingToArray = false,
         logger = false
     }) {
+        this.paused = false;
+        this.resume = () => false;
+        this.stopped = false;
         this.inputData = inputData;
         this.outputData = {};
         this.outputDataKey = outputDataKey;
@@ -56,7 +59,15 @@ module.exports = class PromisesRunner {
         }
     }
 
-    resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {
+    async resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {
+        if (this.paused) {
+            await this.paused;
+            this.paused = false;
+            this.resume = () => false;
+        }
+        if (this.stopped) {
+            return Promise.resolve()
+        }
         return Promise.all(parallelPromises)
             .then(results => {
                 if (this.mergeOutputSpecial) {
@@ -85,6 +96,17 @@ module.exports = class PromisesRunner {
     start() {
         return this.runSetOfPromisesFrom()
             .then(result => Promise.resolve(this.getOutputData()));
+    }
+
+    pause() {
+        this.paused = new Promise((resolve => { this.resume = resolve}).bind(this));
+
+        return this.resume;
+    }
+
+    stop() {
+        this.stopped = true;
+        return this.getOutputData();
     }
 
     runSetOfPromisesFrom(startIndex = 0) {
