@@ -59,23 +59,34 @@ module.exports = class PromisesRunner {
         }
     }
 
-    async resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {
+    async stopOrWaitPause() {
         if (this.paused) {
             await this.paused;
             this.paused = false;
             this.resume = () => false;
         }
         if (this.stopped) {
-            return Promise.resolve()
+            return Promise.resolve(false)
+        }
+        return Promise.resolve(true)
+    }
+
+    async resolvePromisesAndRunFollowing(parallelPromises, nextPromiseToRun, outputKey) {
+        const shouldContinue = await this.stopOrWaitPause();
+        if (!shouldContinue) {
+            return Promise.resolve(this.getOutputData())
         }
         return Promise.all(parallelPromises)
-            .then(results => {
+            .then(async results => {
                 if (this.mergeOutputSpecial) {
                     this.outputData = mergeObjectCreatingArraysForSameKeys(this.outputData, results)
                 } else {
                     this.outputData = Object.assign({}, this.outputData, ...results);
                 }
-
+                const shouldContinue = await this.stopOrWaitPause();
+                if (!shouldContinue) {
+                    return Promise.resolve(this.getOutputData())
+                }
                 return ensurePromise(nextPromiseToRun(this.inputForPromise()))
                     .then(result => Promise.resolve(outputKey !== undefined ? {[outputKey]: result} : result))
             })
@@ -99,7 +110,7 @@ module.exports = class PromisesRunner {
     }
 
     pause() {
-        this.paused = new Promise((resolve => { this.resume = resolve}).bind(this));
+        this.paused = new Promise(resolve => { this.resume = resolve});
 
         return this.resume;
     }
@@ -119,13 +130,16 @@ module.exports = class PromisesRunner {
             const {wait, promise, outputKey} = promiseToRun;
             if (wait) {
                 return this.resolvePromisesAndRunFollowing(parallelPromises, promise, outputKey)
-                    .then(val => {
+                    .then(async val => {
                         if (this.mergeOutputSpecial) {
                             this.outputData = mergeObjectCreatingArraysForSameKeys(this.outputData, val)
                         } else {
                             this.outputData = Object.assign({}, this.outputData, val);
                         }
-
+                        const shouldContinue = await this.stopOrWaitPause();
+                        if (!shouldContinue) {
+                            return Promise.resolve(this.getOutputData())
+                        }
                         return this.runSetOfPromisesFrom(i + 1);
                     });
             } else {
